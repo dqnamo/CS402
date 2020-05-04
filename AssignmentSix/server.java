@@ -20,6 +20,7 @@ public class server {
     while(true){
       Socket s = server.accept();
       System.out.println("New client connected");
+      System.out.println(s);
 
       executor.execute(new CurrencyConversion(s));
     }
