@@ -5,23 +5,46 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 public class server {
   public static void main(String [] args) throws IOException{
-    System.out.println("Server has started");
-    ServerSocket ss = new ServerSocket(4999);
-    Socket s = ss.accept();
+    System.out.println("Server has started...");
 
-    System.out.println("Client Connected");
+    ServerSocket server = new ServerSocket(4999);
+    ExecutorService executor = Executors.newFixedThreadPool(4);
 
-    InputStreamReader in = new InputStreamReader(s.getInputStream());
-    BufferedReader bf = new BufferedReader(in);
-    String input = bf.readLine();
+    while(true){
+      Socket s = server.accept();
+      System.out.println("New client connected");
 
-    BigDecimal n = new BigDecimal(input);
+      executor.execute(new CurrencyConversion(s));
+    }
+  }
+}
 
-    System.out.println("Client wants to convert " + n + " euros");
-    calculate_results(s,n);
+class CurrencyConversion implements Runnable{
+
+  private Socket socket;
+  private BigDecimal amount;
+
+  public CurrencyConversion(Socket s) throws IOException{
+    this.socket = s;
+  }
+
+  public void run(){
+    try {
+      InputStreamReader in = new InputStreamReader(this.socket.getInputStream());
+      BufferedReader bf = new BufferedReader(in);
+      this.amount = new BigDecimal(bf.readLine());
+      System.out.println("Input recieved");
+      calculate_results(this.socket,this.amount);
+    }catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   static void calculate_results(Socket s, BigDecimal n) throws IOException{
@@ -31,6 +54,7 @@ public class server {
     pr.println("GBP: " + convert_to_gbp(n));
     pr.println("YEN: " + convert_to_yen(n));
 
+    System.out.println("Sent Response");
     pr.flush();
   }
 
