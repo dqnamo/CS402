@@ -4,21 +4,17 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.Executors;
 
 public class client{
   public static void main(String[] args) {
-    // Create a 2 thread pool for sender and reciever.
-    ExecutorService executor = Executors.newFixedThreadPool(2);
-
     Scanner scan = new Scanner(System.in);
     System.out.println("Enter your name:");
     String name = scan.nextLine();
 
-    executor.execute(new Sender(name));
-    executor.execute(new Receiver());
+    Thread thread_for_sender = new Thread(new Sender(name));
+    Thread thread_for_receiver = new Thread(new Receiver());
+    thread_for_sender.start();
+    thread_for_receiver.start();
   }
 }
 
